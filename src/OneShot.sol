@@ -26,6 +26,7 @@ contract OneShot is IOneShot, ERC721URIStorage, Ownable {
         _;
     }
 
+    // @written mintRapper does not return tokenId making it difficult for user's to know their tokenId
     function mintRapper() public {
         uint256 tokenId = _nextTokenId++;
         _safeMint(msg.sender, tokenId);
@@ -35,6 +36,7 @@ contract OneShot is IOneShot, ERC721URIStorage, Ownable {
             RapperStats({weakKnees: true, heavyArms: true, spaghettiSweater: true, calmAndReady: false, battlesWon: 0});
     }
 
+    // @written💯 setting onlyStreetContract to be able to call this contract prevents `battlesWon` field of a RapperNFT from getting updated
     function updateRapperStats(
         uint256 tokenId,
         bool weakKnees,

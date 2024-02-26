@@ -8,6 +8,12 @@ import {Streets} from "./Streets.sol";
 contract Credibility is ERC20, Ownable {
     Streets private _streetsContract;
 
+    // ?question: Docs suggests that ERC20 token represent a Rapper's credibility and TIME on the streets
+    // I can't see any way to determine a Rapper's time on the streets
+    /**
+        answered - a token is earned per day✅
+     */
+
     constructor() ERC20("Credibility", "CRED") Ownable(msg.sender) {}
 
     function setStreetsContract(address streetsContract) public onlyOwner {

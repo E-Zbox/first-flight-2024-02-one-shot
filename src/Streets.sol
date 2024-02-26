@@ -36,6 +36,11 @@ contract Streets is IERC721Receiver {
 
     // Unstake tokens by transferring them back to their owner
     function unstake(uint256 tokenId) external {
+        // ?question does this function follow C.E.I
+        /**
+            answered it's not an issue because the transferFrom that gets called
+            does not hand over control flow to some external entity beyond this contract control
+         */
         require(stakes[tokenId].owner == msg.sender, "Not the token owner");
         uint256 stakedDuration = block.timestamp - stakes[tokenId].startTime;
         uint256 daysStaked = stakedDuration / 1 days;
@@ -81,6 +86,7 @@ contract Streets is IERC721Receiver {
     }
 
     // Implementing IERC721Receiver so the contract can accept ERC721 tokens
+    // ?question what the heck is going on here
     function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }

@@ -17,6 +17,7 @@ contract RapBattle {
     uint256 public defenderBet;
     uint256 public defenderTokenId;
 
+    // @written BASE_SKILL is different from what the Documentation specified
     uint256 public constant BASE_SKILL = 65; // The starting base skill of a rapper
     uint256 public constant VICE_DECREMENT = 5; // -5 for each vice the rapper has
     uint256 public constant VIRTUE_INCREMENT = 10; // +10 for each virtue the rapper has
@@ -43,10 +44,19 @@ contract RapBattle {
 
             emit OnStage(msg.sender, _tokenId, _credBet);
 
+            // ?question what's the point of staking challenger's OneShot NFT
+            /**
+                answered✅ staking challenger's NFT shows that we have the
+                right to transfer it since only ERC721 owner can approve 
+                another address to transfer it, 
+                it proves _tokenId belongs to msg.sender✅
+             */
+            // ?question missing `onERC721Received` to accept ERC721 tokens seems not to be a problem
             oneShotNft.transferFrom(msg.sender, address(this), _tokenId);
             credToken.transferFrom(msg.sender, address(this), _credBet);
         } else {
             // credToken.transferFrom(msg.sender, address(this), _credBet);
+            // ?question why are there no token transfers
             _battle(_tokenId, _credBet);
         }
     }
@@ -57,19 +67,24 @@ contract RapBattle {
         uint256 defenderRapperSkill = getRapperSkill(defenderTokenId);
         uint256 challengerRapperSkill = getRapperSkill(_tokenId);
         uint256 totalBattleSkill = defenderRapperSkill + challengerRapperSkill;
+        // ?question totalPrize does not serve any purpose
         uint256 totalPrize = defenderBet + _credBet;
 
+        // ?question what is block.prevrandao
         uint256 random =
             uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % totalBattleSkill;
 
         // Reset the defender
         defender = address(0);
+        // @written✅ possible wrong event gets emitted when random == defenderRapperSkill hence, causing emitting msg.sender as the winner
         emit Battle(msg.sender, _tokenId, random < defenderRapperSkill ? _defender : msg.sender);
 
         // If random <= defenderRapperSkill -> defenderRapperSkill wins, otherwise they lose
         if (random <= defenderRapperSkill) {
-            // We give them the money the defender deposited, and the challenger's bet
+            // We give winner the money the defender deposited, and the challenger's bet
             credToken.transfer(_defender, defenderBet);
+            // @written✅ challenger can choose not to approve address(this) to spend their token
+            // so that if they loose, the tx reverts😎
             credToken.transferFrom(msg.sender, _defender, _credBet);
         } else {
             // Otherwise, since the challenger never sent us the money, we just give the money in the contract
